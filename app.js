@@ -6,6 +6,7 @@ const PORT = 3001;
 let state = {
   suhu: 28.0,
   kelembapan: 60.0,
+  tekanan: 1013.0,
   relay: false,
   threshold: 30.0,
   history: []
@@ -25,13 +26,19 @@ setInterval(() => {
   if (state.kelembapan > 90) state.kelembapan = 90;
   state.kelembapan = Math.round(state.kelembapan * 10) / 10;
 
+  let presDrift = (Math.random() - 0.5) * 0.5;
+  state.tekanan += presDrift;
+  if (state.tekanan < 1000) state.tekanan = 1000;
+  if (state.tekanan > 1025) state.tekanan = 1025;
+  state.tekanan = Math.round(state.tekanan * 10) / 10;
+
   if (state.suhu >= state.threshold) {
     state.relay = true;
   } else if (state.suhu <= state.threshold - 2) {
     state.relay = false;
   }
 
-  state.history.push({ t: Date.now(), suhu: state.suhu, kelembapan: state.kelembapan, relay: state.relay });
+  state.history.push({ t: Date.now(), suhu: state.suhu, kelembapan: state.kelembapan, tekanan: state.tekanan, relay: state.relay });
   if (state.history.length > 40) state.history.shift();
 }, 2000);
 
@@ -55,5 +62,5 @@ app.post('/api/threshold', (req, res) => {
 });
 
 app.listen(PORT, () => {
-  console.log(`IoT Suhu jalan di http://localhost:${PORT}`);
+  console.log(`SCADA Suhu jalan di http://localhost:${PORT}`);
 });
