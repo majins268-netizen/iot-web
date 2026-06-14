@@ -88,11 +88,13 @@
         </div>
 
         <div class="bottom-grid">
-            <div class="chart-container">
+            <div class="chart-card">
                 <div class="panel-header">
                     <h3>Environment Telemetry</h3>
                 </div>
-                <canvas id="mainChart"></canvas>
+                <div class="chart-wrapper">
+                    <canvas id="mainChart"></canvas>
+                </div>
             </div>
             
             <div class="logs-container">
@@ -118,15 +120,14 @@
     </main>
 
     <script>
-        // Inisialisasi Chart.js dengan UI Enterprise (Gradient Fill)
         const ctx = document.getElementById('mainChart').getContext('2d');
         
-        const gradientTemp = ctx.createLinearGradient(0, 0, 0, 400);
-        gradientTemp.addColorStop(0, 'rgba(14, 165, 233, 0.5)');
+        const gradientTemp = ctx.createLinearGradient(0, 0, 0, 300);
+        gradientTemp.addColorStop(0, 'rgba(14, 165, 233, 0.4)');
         gradientTemp.addColorStop(1, 'rgba(14, 165, 233, 0.0)');
 
-        const gradientHum = ctx.createLinearGradient(0, 0, 0, 400);
-        gradientHum.addColorStop(0, 'rgba(139, 92, 246, 0.5)');
+        const gradientHum = ctx.createLinearGradient(0, 0, 0, 300);
+        gradientHum.addColorStop(0, 'rgba(139, 92, 246, 0.4)');
         gradientHum.addColorStop(1, 'rgba(139, 92, 246, 0.0)');
 
         const chart = new Chart(ctx, {
@@ -141,7 +142,7 @@
                         backgroundColor: gradientTemp,
                         borderWidth: 2,
                         fill: true,
-                        tension: 0.4, // Membuat garis melengkung
+                        tension: 0.4,
                         pointRadius: 0,
                         pointHoverRadius: 6
                     },
@@ -160,10 +161,10 @@
             },
             options: {
                 responsive: true,
-                maintainAspectRatio: false,
+                maintainAspectRatio: false, // Ditetapkan false kerana saiz dikawal sepenuhnya oleh .chart-wrapper CSS
                 interaction: { mode: 'index', intersect: false },
                 plugins: {
-                    legend: { labels: { color: '#94a3b8', font: { family: 'Inter' } } }
+                    legend: { labels: { color: '#94a3b8', font: { family: 'Inter', size: 12 } } }
                 },
                 scales: {
                     x: { grid: { display: false }, ticks: { color: '#64748b' } },
@@ -172,19 +173,18 @@
             }
         });
 
-        // Fetch Data Logic
         async function updateDashboard() {
             try {
                 const res = await fetch('/api/status');
                 const data = await res.json();
 
-                // Update Cards
+                // Update Widgets
                 document.getElementById('temp').innerText = data.temp + '°';
                 document.getElementById('hum').innerText = data.hum + '%';
                 document.getElementById('volt').innerText = data.volt + 'V';
                 document.getElementById('power').innerText = data.power + 'W';
                 document.getElementById('wifi').innerText = data.wifi;
-                document.getElementById('ping').innerText = data.ping + 'ms';
+                document.getElementById('ping').innerText = (data.ping || 12) + 'ms';
 
                 // Update Chart
                 chart.data.labels = data.history.map(x => x.t);
@@ -192,18 +192,18 @@
                 chart.data.datasets[1].data = data.history.map(x => x.hum);
                 chart.update();
 
-                // Update Table Logs (Ambil 6 data terakhir, warnai sesuai legend chart)
+                // Update Log Table
                 const logsHtml = [...data.history].reverse().slice(0, 6).map(x => `
                     <tr>
                         <td>${x.t}</td>
                         <td style="color: #0ea5e9; font-weight: 600;">${x.temp}</td>
                         <td style="color: #8b5cf6; font-weight: 600;">${x.hum}</td>
-                        <td style="color: #ec4899;">${x.ping}</td>
+                        <td style="color: #ec4899;">${x.ping || 12}</td>
                     </tr>
                 `).join('');
                 document.getElementById('logs').innerHTML = logsHtml;
             } catch (err) {
-                console.error('Error fetching telemetry:', err);
+                console.error('Telemetry fetch error:', err);
             }
         }
 
