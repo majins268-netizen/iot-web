@@ -1,7 +1,7 @@
 {
-  "name": "enterprise-telemetry-dashboard",
+  "name": "iotherm-pro-dashboard",
   "version": "1.0.0",
-  "description": "Enterprise Telemetry Dashboard with real-time monitoring",
+  "description": "Smart temperature control dashboard with real-time monitoring",
   "main": "app.js",
   "scripts": {
     "start": "node app.js",
@@ -10,7 +10,7 @@
   "dependencies": {
     "express": "^4.19.2"
   },
-  "keywords": ["iot", "telemetry", "dashboard", "enterprise"],
+  "keywords": ["iot", "temperature", "dashboard", "smart-control"],
   "author": "",
   "license": "MIT"
 }
