@@ -1,21 +1,80 @@
+
 <!doctype html>
-<html><head>
+<html>
+<head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>IoT Dashboard</title>
+<title>IoT Modern Dashboard</title>
 <link rel="stylesheet" href="style.css">
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
-<div class="container">
-<h1>⚡ IoT Dashboard</h1>
+<div class="sidebar">
+<div class="logo">⚡ IoT Modern</div>
+<div class="menu">
+<div>Dashboard</div><div>Devices</div><div>Analytics</div><div>Alerts</div>
+</div>
+</div>
+
+<div class="main">
+<h1>Smart Factory Monitoring</h1>
+
 <div class="cards">
-<div class="card"><h3>Temperature</h3><div id="suhu">--</div></div>
-<div class="card"><h3>Humidity</h3><div id="hum">--</div></div>
-<div class="card"><h3>Voltage</h3><div id="volt">--</div></div>
-<div class="card"><h3>Power</h3><div id="power">--</div></div>
+<div class="card c1"><div>🌡️ Temperature</div><div class="val" id="temp">--</div></div>
+<div class="card c2"><div>💧 Humidity</div><div class="val" id="hum">--</div></div>
+<div class="card c3"><div>⚡ Voltage</div><div class="val" id="volt">--</div></div>
+<div class="card c4"><div>🔋 Power</div><div class="val" id="power">--</div></div>
+<div class="card c5"><div>📶 WiFi</div><div class="val" id="wifi">--</div></div>
 </div>
-<div class="panel"><canvas id="chart"></canvas></div>
+
+<div class="panel">
+<canvas id="chart"></canvas>
 </div>
-<script src="script.js"></script>
-</body></html>
+
+<div class="status">
+<div class="panel">
+<h3>System Status</h3>
+<div class="badge">🟢 Device Online</div>
+</div>
+
+<div class="panel">
+<h3>Realtime Logs</h3>
+<table>
+<thead><tr><th>Time</th><th>Temp</th><th>Hum</th></tr></thead>
+<tbody id="logs"></tbody>
+</table>
+</div>
+</div>
+</div>
+
+<script>
+const chart=new Chart(document.getElementById('chart'),{
+type:'line',
+data:{labels:[],datasets:[
+{label:'Temperature',data:[],borderColor:'#22d3ee',tension:.4},
+{label:'Humidity',data:[],borderColor:'#ec4899',tension:.4}
+]}
+});
+
+async function load(){
+ const r=await fetch('/api/status');
+ const d=await r.json();
+
+ temp.innerText=d.temp+'°C';
+ hum.innerText=d.hum+'%';
+ volt.innerText=d.volt+'V';
+ power.innerText=d.power+'W';
+ wifi.innerText=d.wifi+' dBm';
+
+ chart.data.labels=d.history.map(x=>x.t);
+ chart.data.datasets[0].data=d.history.map(x=>x.temp);
+ chart.data.datasets[1].data=d.history.map(x=>x.hum);
+ chart.update();
+
+ logs.innerHTML=d.history.slice().reverse().slice(0,8)
+ .map(x=>`<tr><td>${x.t}</td><td>${x.temp}</td><td>${x.hum}</td></tr>`).join('');
+}
+load();setInterval(load,2000);
+</script>
+</body>
+</html>
