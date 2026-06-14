@@ -1,8 +1,8 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
 :root {
-    --bg-body: #0f172a;       /* Warna latar belakang utama (Dark Blue/Gray) */
-    --bg-surface: #1e293b;    /* Warna card/panel */
+    --bg-body: #0f172a;
+    --bg-surface: #1e293b;
     --bg-surface-hover: #334155;
     --text-primary: #f8fafc;
     --text-secondary: #94a3b8;
@@ -23,15 +23,19 @@ body {
     background-color: var(--bg-body);
     color: var(--text-primary);
     display: flex;
+    min-height: 100vh;
+    overflow-x: hidden;
 }
 
-/* Sidebar Styling */
+/* Sidebar Navigation */
 .sidebar {
     width: var(--sidebar-width);
     height: 100vh;
     background-color: var(--bg-surface);
     border-right: 1px solid var(--border-color);
     position: fixed;
+    left: 0;
+    top: 0;
     padding: 24px;
     display: flex;
     flex-direction: column;
@@ -78,7 +82,7 @@ body {
 }
 .menu li.active { border-left: 4px solid var(--accent-primary); }
 
-/* Main Content Area */
+/* Main Area */
 .main-content {
     margin-left: var(--sidebar-width);
     flex: 1;
@@ -135,7 +139,7 @@ body {
     font-size: 14px;
 }
 
-/* Dashboard Header */
+/* Header */
 .dashboard-header {
     display: flex;
     justify-content: space-between;
@@ -163,7 +167,7 @@ body {
     100% { opacity: 1; }
 }
 
-/* Data Cards Grid */
+/* Widgets Grid */
 .cards-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
@@ -209,26 +213,52 @@ body {
     font-weight: 700;
 }
 
-/* Bottom Grid for Charts & Logs */
+/* Bottom Grid Fix */
 .bottom-grid {
     display: grid;
-    grid-template-columns: 2fr 1fr; /* 66% Chart, 33% Table */
+    grid-template-columns: 2fr 1fr;
     gap: 24px;
+    align-items: start;
 }
 
-.chart-container, .logs-container {
+.chart-card {
     background: var(--bg-surface);
     border: 1px solid var(--border-color);
     border-radius: 24px;
     padding: 24px;
+    height: 420px;
+    display: flex;
+    flex-direction: column;
 }
 
-.chart-container { height: 420px; }
+/* Penyelamat Grafik: Mengunci tinggi ruang kanvas */
+.chart-wrapper {
+    flex-grow: 1;
+    position: relative;
+    width: 100%;
+    height: 100%;
+}
+
+.chart-wrapper canvas {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100% !important;
+    height: 100% !important;
+}
+
+.logs-container {
+    background: var(--bg-surface);
+    border: 1px solid var(--border-color);
+    border-radius: 24px;
+    padding: 24px;
+    min-height: 420px;
+}
 
 .panel-header { margin-bottom: 20px; }
 .panel-header h3 { font-size: 18px; font-weight: 600; }
 
-/* Real-time Logs Table */
+/* Table Logs */
 .table-responsive { overflow-x: auto; }
 table { width: 100%; border-collapse: collapse; text-align: left; }
 th {
@@ -239,14 +269,14 @@ th {
     border-bottom: 1px solid var(--border-color);
 }
 td {
-    padding: 16px 0;
+    padding: 14px 0;
     border-bottom: 1px solid rgba(51, 65, 85, 0.5);
     font-size: 14px;
 }
 tr:last-child td { border-bottom: none; }
 
-/* Responsive adjustments */
-@media (max-width: 1024px) {
+/* Responsive Media Queries */
+@media (max-width: 1200px) {
     .bottom-grid { grid-template-columns: 1fr; }
 }
 
