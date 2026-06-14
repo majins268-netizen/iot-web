@@ -1,92 +1,214 @@
-
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>IoT Admin Dashboard Pro</title>
-<link rel="stylesheet" href="style.css">
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enterprise Telemetry Dashboard</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
+    <nav class="sidebar">
+        <div class="logo">
+            <i class='bx bx-hive'></i>
+            <span>Nexus IoT</span>
+        </div>
+        <ul class="menu">
+            <li class="active"><i class='bx bxs-dashboard'></i> Dashboard</li>
+            <li><i class='bx bx-devices'></i> Devices</li>
+            <li><i class='bx bx-server'></i> Bare Metal Nodes</li>
+            <li><i class='bx bx-line-chart'></i> Telemetry</li>
+            <li><i class='bx bx-cog'></i> Settings</li>
+        </ul>
+    </nav>
 
-<div class="sidebar">
-<div class="logo">⚡ IoT Admin</div>
-<div class="menu">
-<a href="#">🏠 Dashboard</a>
-<a href="#">📡 Devices</a>
-<a href="#">📈 Analytics</a>
-<a href="#">🔔 Alerts</a>
-<a href="#">⚙ Settings</a>
-</div>
-</div>
+    <main class="main-content">
+        <header class="topbar">
+            <div class="search-bar">
+                <i class='bx bx-search'></i>
+                <input type="text" placeholder="Search telemetry data...">
+            </div>
+            <div class="user-info">
+                <i class='bx bx-bell'></i>
+                <div class="avatar">Admin</div>
+            </div>
+        </header>
 
-<div class="main">
-<div class="topbar">
-<h1>Smart Factory Monitoring</h1>
-<div>🟢 Online</div>
-</div>
+        <div class="dashboard-header">
+            <h1>System Overview</h1>
+            <div class="status-badge pulse">
+                <i class='bx bx-radio-circle-marked'></i> System Online
+            </div>
+        </div>
 
-<div class="cards">
-<div class="card blue"><div>Temperature</div><div id="temp" class="value">--</div></div>
-<div class="card pink"><div>Humidity</div><div id="hum" class="value">--</div></div>
-<div class="card green"><div>Voltage</div><div id="volt" class="value">--</div></div>
-<div class="card orange"><div>Power</div><div id="power" class="value">--</div></div>
-</div>
+        <div class="cards-grid">
+            <div class="card">
+                <div class="card-icon" style="color: #0ea5e9; background: rgba(14, 165, 233, 0.1);"><i class='bx bxs-thermometer'></i></div>
+                <div class="card-info">
+                    <p>Temperature</p>
+                    <h3 id="temp">--</h3>
+                </div>
+            </div>
+            <div class="card">
+                <div class="card-icon" style="color: #8b5cf6; background: rgba(139, 92, 246, 0.1);"><i class='bx bxs-droplet'></i></div>
+                <div class="card-info">
+                    <p>Humidity</p>
+                    <h3 id="hum">--</h3>
+                </div>
+            </div>
+            <div class="card">
+                <div class="card-icon" style="color: #f59e0b; background: rgba(245, 158, 11, 0.1);"><i class='bx bxs-zap'></i></div>
+                <div class="card-info">
+                    <p>Power Draw</p>
+                    <h3 id="power">--</h3>
+                </div>
+            </div>
+            <div class="card">
+                <div class="card-icon" style="color: #10b981; background: rgba(16, 185, 129, 0.1);"><i class='bx bxs-bolt'></i></div>
+                <div class="card-info">
+                    <p>Voltage</p>
+                    <h3 id="volt">--</h3>
+                </div>
+            </div>
+            <div class="card">
+                <div class="card-icon" style="color: #ef4444; background: rgba(239, 68, 68, 0.1);"><i class='bx bx-wifi'></i></div>
+                <div class="card-info">
+                    <p>Signal (dBm)</p>
+                    <h3 id="wifi">--</h3>
+                </div>
+            </div>
+            <div class="card">
+                <div class="card-icon" style="color: #ec4899; background: rgba(236, 72, 153, 0.1);"><i class='bx bx-network-chart'></i></div>
+                <div class="card-info">
+                    <p>Latency</p>
+                    <h3 id="ping">--</h3>
+                </div>
+            </div>
+        </div>
 
-<div class="grid">
-<div class="panel">
-<h3>Realtime Monitoring</h3>
-<canvas id="chart"></canvas>
-</div>
+        <div class="bottom-grid">
+            <div class="chart-container">
+                <div class="panel-header">
+                    <h3>Environment Telemetry</h3>
+                </div>
+                <canvas id="mainChart"></canvas>
+            </div>
+            
+            <div class="logs-container">
+                <div class="panel-header">
+                    <h3>Real-time Logs</h3>
+                </div>
+                <div class="table-responsive">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Timestamp</th>
+                                <th>Temp (°C)</th>
+                                <th>Hum (%)</th>
+                                <th>Ping (ms)</th>
+                            </tr>
+                        </thead>
+                        <tbody id="logs">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </main>
 
-<div class="panel">
-<h3>Device Status</h3>
-<div class="status">ESP32-01 🟢 Online</div>
-<div class="status">ESP32-02 🟢 Online</div>
-<div class="status">Sensor Hub 🟢 Active</div>
-<p style="margin-top:15px">WiFi: <span id="wifi"></span></p>
-</div>
-</div>
+    <script>
+        // Inisialisasi Chart.js dengan UI Enterprise (Gradient Fill)
+        const ctx = document.getElementById('mainChart').getContext('2d');
+        
+        const gradientTemp = ctx.createLinearGradient(0, 0, 0, 400);
+        gradientTemp.addColorStop(0, 'rgba(14, 165, 233, 0.5)');
+        gradientTemp.addColorStop(1, 'rgba(14, 165, 233, 0.0)');
 
-<div class="panel" style="margin-top:20px">
-<h3>Latest Logs</h3>
-<table>
-<thead><tr><th>Time</th><th>Temp</th><th>Hum</th></tr></thead>
-<tbody id="logs"></tbody>
-</table>
-</div>
-</div>
+        const gradientHum = ctx.createLinearGradient(0, 0, 0, 400);
+        gradientHum.addColorStop(0, 'rgba(139, 92, 246, 0.5)');
+        gradientHum.addColorStop(1, 'rgba(139, 92, 246, 0.0)');
 
-<script>
-const chart=new Chart(document.getElementById('chart'),{
-type:'line',
-data:{labels:[],datasets:[
-{label:'Temperature',data:[],borderColor:'#06b6d4',tension:.4},
-{label:'Humidity',data:[],borderColor:'#ec4899',tension:.4}
-]}
-});
+        const chart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: [],
+                datasets: [
+                    {
+                        label: 'Temperature',
+                        data: [],
+                        borderColor: '#0ea5e9',
+                        backgroundColor: gradientTemp,
+                        borderWidth: 2,
+                        fill: true,
+                        tension: 0.4, // Membuat garis melengkung
+                        pointRadius: 0,
+                        pointHoverRadius: 6
+                    },
+                    {
+                        label: 'Humidity',
+                        data: [],
+                        borderColor: '#8b5cf6',
+                        backgroundColor: gradientHum,
+                        borderWidth: 2,
+                        fill: true,
+                        tension: 0.4,
+                        pointRadius: 0,
+                        pointHoverRadius: 6
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                interaction: { mode: 'index', intersect: false },
+                plugins: {
+                    legend: { labels: { color: '#94a3b8', font: { family: 'Inter' } } }
+                },
+                scales: {
+                    x: { grid: { display: false }, ticks: { color: '#64748b' } },
+                    y: { grid: { color: '#1e293b', borderDash: [5, 5] }, ticks: { color: '#64748b' } }
+                }
+            }
+        });
 
-async function load(){
-const r=await fetch('/api/status');
-const d=await r.json();
+        // Fetch Data Logic
+        async function updateDashboard() {
+            try {
+                const res = await fetch('/api/status');
+                const data = await res.json();
 
-temp.innerText=d.temp+'°C';
-hum.innerText=d.hum+'%';
-volt.innerText=d.volt+'V';
-power.innerText=d.power+'W';
-wifi.innerText=d.wifi+' dBm';
+                // Update Cards
+                document.getElementById('temp').innerText = data.temp + '°';
+                document.getElementById('hum').innerText = data.hum + '%';
+                document.getElementById('volt').innerText = data.volt + 'V';
+                document.getElementById('power').innerText = data.power + 'W';
+                document.getElementById('wifi').innerText = data.wifi;
+                document.getElementById('ping').innerText = data.ping + 'ms';
 
-chart.data.labels=d.history.map(x=>x.time);
-chart.data.datasets[0].data=d.history.map(x=>x.temp);
-chart.data.datasets[1].data=d.history.map(x=>x.hum);
-chart.update();
+                // Update Chart
+                chart.data.labels = data.history.map(x => x.t);
+                chart.data.datasets[0].data = data.history.map(x => x.temp);
+                chart.data.datasets[1].data = data.history.map(x => x.hum);
+                chart.update();
 
-logs.innerHTML=d.history.slice().reverse().slice(0,10)
-.map(x=>`<tr><td>${x.time}</td><td>${x.temp}</td><td>${x.hum}</td></tr>`).join('');
-}
-load();setInterval(load,2000);
-</script>
+                // Update Table Logs (Ambil 6 data terakhir, warnai sesuai legend chart)
+                const logsHtml = [...data.history].reverse().slice(0, 6).map(x => `
+                    <tr>
+                        <td>${x.t}</td>
+                        <td style="color: #0ea5e9; font-weight: 600;">${x.temp}</td>
+                        <td style="color: #8b5cf6; font-weight: 600;">${x.hum}</td>
+                        <td style="color: #ec4899;">${x.ping}</td>
+                    </tr>
+                `).join('');
+                document.getElementById('logs').innerHTML = logsHtml;
+            } catch (err) {
+                console.error('Error fetching telemetry:', err);
+            }
+        }
 
+        updateDashboard();
+        setInterval(updateDashboard, 2000);
+    </script>
 </body>
 </html>
