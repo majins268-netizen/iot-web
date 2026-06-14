@@ -1,214 +1,343 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="id">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Enterprise Telemetry Dashboard</title>
-    <link rel="stylesheet" href="style.css">
-    <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
+  <title>IoTherm • Dashboard Suhu Cerdas</title>
+  <!-- Font Awesome 6 & Google Fonts -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <link rel="stylesheet" href="style.css">
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 </head>
 <body>
-    <nav class="sidebar">
-        <div class="logo">
-            <i class='bx bx-hive'></i>
-            <span>Nexus IoT</span>
+  <div class="dashboard">
+    <!-- HEADER -->
+    <div class="header">
+      <div class="logo-area">
+        <div class="logo-icon"><i class="fas fa-thermometer-half"></i></div>
+        <div class="title">
+          <h2>IoTherm Pro</h2>
+          <div style="font-size:0.8rem; color:#6b95c5;">Smart Temperature Control</div>
         </div>
-        <ul class="menu">
-            <li class="active"><i class='bx bxs-dashboard'></i> Dashboard</li>
-            <li><i class='bx bx-devices'></i> Devices</li>
-            <li><i class='bx bx-server'></i> Bare Metal Nodes</li>
-            <li><i class='bx bx-line-chart'></i> Telemetry</li>
-            <li><i class='bx bx-cog'></i> Settings</li>
-        </ul>
-    </nav>
+      </div>
+      <div class="status-badge">
+        <span class="status-dot"></span> <span id="connectionStatus">Terhubung</span>
+      </div>
+      <div class="time-display" id="liveTime">--</div>
+    </div>
 
-    <main class="main-content">
-        <header class="topbar">
-            <div class="search-bar">
-                <i class='bx bx-search'></i>
-                <input type="text" placeholder="Search telemetry data...">
-            </div>
-            <div class="user-info">
-                <i class='bx bx-bell'></i>
-                <div class="avatar">Admin</div>
-            </div>
-        </header>
-
-        <div class="dashboard-header">
-            <h1>System Overview</h1>
-            <div class="status-badge pulse">
-                <i class='bx bx-radio-circle-marked'></i> System Online
-            </div>
+    <!-- KARTU STATISTIK -->
+    <div class="stats-grid">
+      <div class="card">
+        <div class="card-info">
+          <h4><i class="fas fa-temperature-low" style="margin-right:5px;"></i>Suhu Saat Ini</h4>
+          <div class="card-value"><span id="currentTempDisplay">28.4</span><span class="unit">°C</span></div>
         </div>
+        <div class="card-icon"><i class="fas fa-thermometer-full"></i></div>
+      </div>
+      <div class="card">
+        <div class="card-info">
+          <h4><i class="fas fa-bullseye"></i> Target</h4>
+          <div class="card-value"><span id="targetTempDisplay">24.0</span><span class="unit">°C</span></div>
+        </div>
+        <div class="card-icon"><i class="fas fa-sliders-h"></i></div>
+      </div>
+      <div class="card">
+        <div class="card-info">
+          <h4><i class="fas fa-snowflake"></i> Mode</h4>
+          <div class="card-value" style="font-size:1.9rem;" id="modeDisplay">❄️ Dingin</div>
+        </div>
+        <div class="card-icon"><i class="fas fa-cog"></i></div>
+      </div>
+    </div>
 
-        <div class="cards-grid">
-            <div class="card">
-                <div class="card-icon" style="color: #0ea5e9; background: rgba(14, 165, 233, 0.1);"><i class='bx bxs-thermometer'></i></div>
-                <div class="card-info">
-                    <p>Temperature</p>
-                    <h3 id="temp">--</h3>
-                </div>
-            </div>
-            <div class="card">
-                <div class="card-icon" style="color: #8b5cf6; background: rgba(139, 92, 246, 0.1);"><i class='bx bxs-droplet'></i></div>
-                <div class="card-info">
-                    <p>Humidity</p>
-                    <h3 id="hum">--</h3>
-                </div>
-            </div>
-            <div class="card">
-                <div class="card-icon" style="color: #f59e0b; background: rgba(245, 158, 11, 0.1);"><i class='bx bxs-zap'></i></div>
-                <div class="card-info">
-                    <p>Power Draw</p>
-                    <h3 id="power">--</h3>
-                </div>
-            </div>
-            <div class="card">
-                <div class="card-icon" style="color: #10b981; background: rgba(16, 185, 129, 0.1);"><i class='bx bxs-bolt'></i></div>
-                <div class="card-info">
-                    <p>Voltage</p>
-                    <h3 id="volt">--</h3>
-                </div>
-            </div>
-            <div class="card">
-                <div class="card-icon" style="color: #ef4444; background: rgba(239, 68, 68, 0.1);"><i class='bx bx-wifi'></i></div>
-                <div class="card-info">
-                    <p>Signal (dBm)</p>
-                    <h3 id="wifi">--</h3>
-                </div>
-            </div>
-            <div class="card">
-                <div class="card-icon" style="color: #ec4899; background: rgba(236, 72, 153, 0.1);"><i class='bx bx-network-chart'></i></div>
-                <div class="card-info">
-                    <p>Latency</p>
-                    <h3 id="ping">--</h3>
-                </div>
-            </div>
+    <!-- BAGIAN UTAMA: GRAFIK + KONTROL -->
+    <div class="main-panel">
+      <div class="chart-container">
+        <div class="chart-header">
+          <h3><i class="fas fa-chart-line" style="margin-right:8px;"></i>Riwayat Suhu (menit terakhir)</h3>
+          <span style="font-size:0.8rem; color:#89b5f0;"><i class="far fa-clock"></i> real-time</span>
+        </div>
+        <canvas id="temperatureChart" width="400" height="180"></canvas>
+      </div>
+
+      <!-- PANEL KONTROL SUHU OTOMATIS -->
+      <div class="control-panel">
+        <div class="thermostat-ring">
+          <span style="font-size:0.9rem; color:#b8d6ff;">SUHU RUANGAN</span>
+          <div class="big-temp" id="bigCurrentTemp">28.4°</div>
         </div>
 
-        <div class="bottom-grid">
-            <div class="chart-card">
-                <div class="panel-header">
-                    <h3>Environment Telemetry</h3>
-                </div>
-                <div class="chart-wrapper">
-                    <canvas id="mainChart"></canvas>
-                </div>
-            </div>
-            
-            <div class="logs-container">
-                <div class="panel-header">
-                    <h3>Real-time Logs</h3>
-                </div>
-                <div class="table-responsive">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Timestamp</th>
-                                <th>Temp (°C)</th>
-                                <th>Hum (%)</th>
-                                <th>Ping (ms)</th>
-                            </tr>
-                        </thead>
-                        <tbody id="logs">
-                        </tbody>
-                    </table>
-                </div>
-            </div>
+        <div class="target-row">
+          <i class="fas fa-thermometer-half"></i>
+          <span style="color:#bdd6ff;">Target:</span>
+          <span class="target-value" id="controlTargetValue">24.0°C</span>
         </div>
-    </main>
 
-    <script>
-        const ctx = document.getElementById('mainChart').getContext('2d');
-        
-        const gradientTemp = ctx.createLinearGradient(0, 0, 0, 300);
-        gradientTemp.addColorStop(0, 'rgba(14, 165, 233, 0.4)');
-        gradientTemp.addColorStop(1, 'rgba(14, 165, 233, 0.0)');
+        <div class="btn-group">
+          <button class="temp-btn" id="decreaseTargetBtn">−</button>
+          <button class="temp-btn" id="increaseTargetBtn">+</button>
+        </div>
 
-        const gradientHum = ctx.createLinearGradient(0, 0, 0, 300);
-        gradientHum.addColorStop(0, 'rgba(139, 92, 246, 0.4)');
-        gradientHum.addColorStop(1, 'rgba(139, 92, 246, 0.0)');
+        <div class="mode-switch" id="modeSelector">
+          <div class="mode-option active" data-mode="cool">❄️ Dingin</div>
+          <div class="mode-option" data-mode="heat">🔥 Panas</div>
+          <div class="mode-option" data-mode="auto">🤖 Auto</div>
+        </div>
 
-        const chart = new Chart(ctx, {
-            type: 'line',
-            data: {
-                labels: [],
-                datasets: [
-                    {
-                        label: 'Temperature',
-                        data: [],
-                        borderColor: '#0ea5e9',
-                        backgroundColor: gradientTemp,
-                        borderWidth: 2,
-                        fill: true,
-                        tension: 0.4,
-                        pointRadius: 0,
-                        pointHoverRadius: 6
-                    },
-                    {
-                        label: 'Humidity',
-                        data: [],
-                        borderColor: '#8b5cf6',
-                        backgroundColor: gradientHum,
-                        borderWidth: 2,
-                        fill: true,
-                        tension: 0.4,
-                        pointRadius: 0,
-                        pointHoverRadius: 6
-                    }
-                ]
+        <div class="automation-indicator">
+          <i class="fas fa-robot" style="color:#4da6ff;"></i>
+          <span style="flex:1;">Kendali Otomatis</span>
+          <label class="switch">
+            <input type="checkbox" id="autoToggle" checked>
+            <span class="slider"></span>
+          </label>
+        </div>
+        <div class="footer-note">
+          <i class="fas fa-shield-alt"></i> Sistem menyesuaikan otomatis
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (function() {
+      // ---------- STATE SIMULASI IOT ----------
+      let currentTemp = 28.4;          // suhu saat ini
+      let targetTemp = 24.0;          // target suhu
+      let mode = 'cool';             // cool, heat, auto
+      let automationEnabled = true;  // toggle otomatis
+
+      // Data histori grafik (20 titik terakhir, interval 3 detik)
+      const maxDataPoints = 20;
+      let temperatureHistory = Array(maxDataPoints).fill(currentTemp);
+      let timeLabels = Array(maxDataPoints).fill('');
+
+      // Inisialisasi waktu untuk label
+      function updateTimeLabels() {
+        const now = new Date();
+        for (let i = 0; i < maxDataPoints; i++) {
+          let d = new Date(now - (maxDataPoints - 1 - i) * 3000);
+          timeLabels[i] = d.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+        }
+      }
+      updateTimeLabels();
+
+      // ---------- CHART JS ----------
+      const ctx = document.getElementById('temperatureChart').getContext('2d');
+      let tempChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: timeLabels,
+          datasets: [{
+            label: 'Suhu (°C)',
+            data: temperatureHistory,
+            borderColor: '#3b9eff',
+            backgroundColor: 'rgba(0, 160, 255, 0.08)',
+            borderWidth: 2.5,
+            pointBackgroundColor: '#ffffff',
+            pointBorderColor: '#0077ff',
+            pointRadius: 2.5,
+            pointHoverRadius: 6,
+            tension: 0.25,
+            fill: true,
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: true,
+          plugins: {
+            legend: { display: false },
+            tooltip: { mode: 'index', intersect: false }
+          },
+          scales: {
+            y: {
+              beginAtZero: false,
+              min: 15,
+              max: 40,
+              grid: { color: '#1e3c5c' },
+              ticks: { callback: (val) => val + '°C', color: '#b0cce8' }
             },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false, // Ditetapkan false kerana saiz dikawal sepenuhnya oleh .chart-wrapper CSS
-                interaction: { mode: 'index', intersect: false },
-                plugins: {
-                    legend: { labels: { color: '#94a3b8', font: { family: 'Inter', size: 12 } } }
-                },
-                scales: {
-                    x: { grid: { display: false }, ticks: { color: '#64748b' } },
-                    y: { grid: { color: '#1e293b', borderDash: [5, 5] }, ticks: { color: '#64748b' } }
-                }
+            x: {
+              grid: { color: '#1b3250' },
+              ticks: { color: '#9bb9e0', maxTicksLimit: 6 }
             }
+          }
+        }
+      });
+
+      // ---------- FUNGSI UPDATE UI ----------
+      function updateAllUI() {
+        document.getElementById('currentTempDisplay').textContent = currentTemp.toFixed(1);
+        document.getElementById('targetTempDisplay').textContent = targetTemp.toFixed(1);
+        document.getElementById('bigCurrentTemp').textContent = currentTemp.toFixed(1) + '°';
+        document.getElementById('controlTargetValue').textContent = targetTemp.toFixed(1) + '°C';
+
+        // Mode tampilan
+        const modeDisplay = document.getElementById('modeDisplay');
+        if (mode === 'cool') modeDisplay.innerHTML = '❄️ Dingin';
+        else if (mode === 'heat') modeDisplay.innerHTML = '🔥 Panas';
+        else if (mode === 'auto') modeDisplay.innerHTML = '🤖 Auto';
+
+        // Update toggle otomatis
+        document.getElementById('autoToggle').checked = automationEnabled;
+
+        // Update active mode button
+        document.querySelectorAll('.mode-option').forEach(btn => {
+          const btnMode = btn.getAttribute('data-mode');
+          if (btnMode === mode) {
+            btn.classList.add('active');
+          } else {
+            btn.classList.remove('active');
+          }
         });
 
-        async function updateDashboard() {
-            try {
-                const res = await fetch('/api/status');
-                const data = await res.json();
+        // Status koneksi (simulasi)
+        document.getElementById('connectionStatus').innerText = 'Terhubung';
+      }
 
-                // Update Widgets
-                document.getElementById('temp').innerText = data.temp + '°';
-                document.getElementById('hum').innerText = data.hum + '%';
-                document.getElementById('volt').innerText = data.volt + 'V';
-                document.getElementById('power').innerText = data.power + 'W';
-                document.getElementById('wifi').innerText = data.wifi;
-                document.getElementById('ping').innerText = (data.ping || 12) + 'ms';
+      // Update grafik
+      function updateChart() {
+        tempChart.data.labels = timeLabels;
+        tempChart.data.datasets[0].data = temperatureHistory;
+        tempChart.update();
+      }
 
-                // Update Chart
-                chart.data.labels = data.history.map(x => x.t);
-                chart.data.datasets[0].data = data.history.map(x => x.temp);
-                chart.data.datasets[1].data = data.history.map(x => x.hum);
-                chart.update();
+      // Dorong data baru ke histori
+      function pushTemperatureData(temp) {
+        temperatureHistory.push(temp);
+        if (temperatureHistory.length > maxDataPoints) {
+          temperatureHistory.shift();
+        }
+        // Update time labels
+        const now = new Date();
+        timeLabels.push(now.toLocaleTimeString('id-ID', { hour:'2-digit', minute:'2-digit', second:'2-digit' }));
+        if (timeLabels.length > maxDataPoints) timeLabels.shift();
+        updateChart();
+      }
 
-                // Update Log Table
-                const logsHtml = [...data.history].reverse().slice(0, 6).map(x => `
-                    <tr>
-                        <td>${x.t}</td>
-                        <td style="color: #0ea5e9; font-weight: 600;">${x.temp}</td>
-                        <td style="color: #8b5cf6; font-weight: 600;">${x.hum}</td>
-                        <td style="color: #ec4899;">${x.ping || 12}</td>
-                    </tr>
-                `).join('');
-                document.getElementById('logs').innerHTML = logsHtml;
-            } catch (err) {
-                console.error('Telemetry fetch error:', err);
-            }
+      // ---------- LOGIKA OTOMATIS (THERMOSTAT SIMULASI) ----------
+      function applyAutomation() {
+        if (!automationEnabled) return;
+
+        // Simulasi perubahan suhu berdasarkan mode dan selisih
+        const diff = targetTemp - currentTemp;
+        let adjustment = 0;
+
+        if (mode === 'cool') {
+          // Mode dingin: jika suhu > target, turunkan perlahan
+          if (currentTemp > targetTemp) {
+            adjustment = -0.3; // pendinginan
+          } else if (currentTemp < targetTemp - 0.2) {
+            adjustment = +0.1; // sedikit naik alami
+          }
+        } else if (mode === 'heat') {
+          // Mode panas: jika suhu < target, naikkan
+          if (currentTemp < targetTemp) {
+            adjustment = +0.3;
+          } else if (currentTemp > targetTemp + 0.2) {
+            adjustment = -0.1;
+          }
+        } else if (mode === 'auto') {
+          // Auto: menjaga di sekitar target (smooth)
+          if (Math.abs(diff) > 0.2) {
+            adjustment = diff > 0 ? -0.25 : +0.25;
+          } else {
+            adjustment = (Math.random() * 0.1 - 0.05); // fluktuasi kecil
+          }
         }
 
-        updateDashboard();
-        setInterval(updateDashboard, 2000);
-    </script>
+        // Tambahkan noise natural
+        adjustment += (Math.random() * 0.2 - 0.1);
+        
+        let newTemp = currentTemp + adjustment;
+        // Batas aman
+        newTemp = Math.min(38, Math.max(16, newTemp));
+        currentTemp = Math.round(newTemp * 10) / 10;
+      }
+
+      // Simulasi perubahan suhu lingkungan (dipanggil berkala)
+      function environmentalEffect() {
+        // Efek alami tanpa otomatis: sedikit drift
+        if (!automationEnabled) {
+          let drift = (Math.random() * 0.2) - 0.1;
+          if (mode === 'cool') drift -= 0.05; 
+          if (mode === 'heat') drift += 0.05;
+          currentTemp = Math.min(38, Math.max(16, currentTemp + drift));
+          currentTemp = Math.round(currentTemp * 10) / 10;
+        }
+      }
+
+      // ---------- EVENT HANDLER ----------
+      document.getElementById('increaseTargetBtn').addEventListener('click', () => {
+        if (targetTemp < 35) {
+          targetTemp = Math.round((targetTemp + 0.5) * 10) / 10;
+          updateAllUI();
+        }
+      });
+
+      document.getElementById('decreaseTargetBtn').addEventListener('click', () => {
+        if (targetTemp > 17) {
+          targetTemp = Math.round((targetTemp - 0.5) * 10) / 10;
+          updateAllUI();
+        }
+      });
+
+      // Mode selector
+      document.querySelectorAll('.mode-option').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+          const selectedMode = this.getAttribute('data-mode');
+          if (selectedMode) {
+            mode = selectedMode;
+            updateAllUI();
+          }
+        });
+      });
+
+      // Toggle otomatis
+      document.getElementById('autoToggle').addEventListener('change', function(e) {
+        automationEnabled = e.target.checked;
+        updateAllUI();
+      });
+
+      // Update jam real-time
+      function updateClock() {
+        const now = new Date();
+        document.getElementById('liveTime').textContent = now.toLocaleTimeString('id-ID', {
+          hour: '2-digit', minute: '2-digit', second: '2-digit'
+        }) + ' WIB';
+      }
+      setInterval(updateClock, 1000);
+      updateClock();
+
+      // ---------- LOOP SIMULASI IOT (setiap 3 detik) ----------
+      function simulationStep() {
+        // 1. Terapkan logika otomatis jika aktif
+        applyAutomation();
+        // 2. Efek lingkungan ringan
+        environmentalEffect();
+        // 3. Catat ke histori
+        pushTemperatureData(currentTemp);
+        // 4. Perbarui UI
+        updateAllUI();
+      }
+
+      // Inisialisasi data historis dengan suhu awal
+      temperatureHistory = Array(maxDataPoints).fill(currentTemp);
+      updateTimeLabels();
+      updateChart();
+      updateAllUI();
+
+      // Jalankan simulasi setiap 3 detik
+      setInterval(simulationStep, 3000);
+      
+      // Opsional: segera panggil satu kali agar tidak kosong
+      setTimeout(() => {
+        pushTemperatureData(currentTemp);
+        updateAllUI();
+      }, 200);
+    })();
+  </script>
 </body>
 </html>
