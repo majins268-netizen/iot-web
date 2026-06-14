@@ -1,273 +1,105 @@
+
 <!DOCTYPE html>
-<html lang="id">
+<html>
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SCADA — Temperature Control Monitoring</title>
-  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>IoT Dashboard V2</title>
+<link rel="stylesheet" href="style.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
+<div class="sidebar">
+<h2>⚡ IoT V2</h2>
+<div>Dashboard</div>
+<div>Devices</div>
+<div>Alerts</div>
+<div>Settings</div>
+</div>
 
-  <header>
-    <div class="brand">
-      <span class="brand-mark">●</span>
-      <div>
-        <div class="brand-name">CLIMATE CONTROL — UNIT 01</div>
-        <div class="brand-sub">Robby Auliya Alhikmah / Monitoring Panel</div>
-      </div>
-    </div>
-    <div class="header-right">
-      <div class="clock" id="clock">--:--:--</div>
-      <div class="status-pill" id="connStatus">
-        <span class="dot"></span>
-        <span>ONLINE</span>
-      </div>
-    </div>
-  </header>
+<div class="main">
+<h1>Smart Monitoring</h1>
 
-  <main>
-    <section class="grid-top">
-      <div class="panel main-temp" id="tempPanel">
-        <div class="panel-label">SUHU RUANGAN</div>
-        <div class="temp-value-row">
-          <span class="temp-value" id="suhuValue">--</span>
-          <span class="temp-unit">°C</span>
-        </div>
-        <div class="temp-status" id="suhuStatus">MEMUAT...</div>
-      </div>
+<div class="cards">
+<div class="card"><span>Suhu</span><h2 id="suhu">--</h2></div>
+<div class="card"><span>Humidity</span><h2 id="hum">--</h2></div>
+<div class="card"><span>Voltage</span><h2 id="volt">--</h2></div>
+<div class="card"><span>Power</span><h2 id="power">--</h2></div>
+<div class="card"><span>Battery</span><h2 id="battery">95%</h2></div>
+<div class="card"><span>WiFi</span><h2 id="wifi">--</h2></div>
+</div>
 
-      <div class="panel">
-        <div class="panel-label">KELEMBAPAN</div>
-        <div class="sub-value" id="humValue">-- %</div>
-        <div class="bar-track"><div class="bar-fill" id="humBar"></div></div>
-      </div>
+<div class="panel">
+<canvas id="chart"></canvas>
+</div>
 
-      <div class="panel">
-        <div class="panel-label">TEKANAN UDARA</div>
-        <div class="sub-value" id="presValue">-- hPa</div>
-        <div class="bar-track"><div class="bar-fill bar-blue" id="presBar"></div></div>
-      </div>
+<div class="grid">
+<div class="panel">
+<h3>Alert Center</h3>
+<div id="alert"></div>
+</div>
 
-      <div class="panel">
-        <div class="panel-label">SISTEM PENDINGIN</div>
-        <div class="relay-display">
-          <span class="led" id="relayLed"></span>
-          <span class="relay-text" id="relayStatus">--</span>
-        </div>
-        <div class="sub-foot" id="relayFoot">Menunggu data...</div>
-      </div>
-    </section>
+<div class="panel">
+<h3>Threshold</h3>
+<input id="threshold" type="range" min="25" max="35" step="0.5">
+<p id="thresholdText"></p>
+</div>
+</div>
 
-    <section class="grid-charts">
-      <div class="panel chart-panel">
-        <div class="panel-title-row">
-          <span class="panel-title">TREND SUHU</span>
-          <span class="panel-meta">°C / 2s</span>
-        </div>
-        <canvas id="chartSuhu" height="180"></canvas>
-      </div>
+<div class="panel">
+<h3>Realtime Logs</h3>
+<table>
+<thead><tr><th>Time</th><th>Suhu</th><th>Humidity</th></tr></thead>
+<tbody id="logs"></tbody>
+</table>
+</div>
+</div>
 
-      <div class="panel chart-panel">
-        <div class="panel-title-row">
-          <span class="panel-title">TREND KELEMBAPAN</span>
-          <span class="panel-meta">% / 2s</span>
-        </div>
-        <canvas id="chartHum" height="180"></canvas>
-      </div>
-    </section>
+<script>
+const chart=new Chart(document.getElementById('chart'),{
+type:'line',
+data:{labels:[],datasets:[
+{label:'Suhu',data:[]},
+{label:'Humidity',data:[]}
+]}
+});
 
-    <section class="panel control-panel">
-      <div class="panel-title-row">
-        <span class="panel-title">PENGATURAN AMBANG BATAS</span>
-      </div>
-      <p class="control-desc">
-        Pendingin otomatis aktif jika suhu &ge; ambang batas, dan nonaktif setelah suhu turun 2°C di bawahnya (hysteresis control).
-      </p>
-      <div class="threshold-row">
-        <span>Ambang Batas</span>
-        <span class="threshold-value" id="thresholdLabel">30.0°C</span>
-      </div>
-      <input type="range" id="thresholdSlider" min="25" max="35" step="0.5" value="30">
-      <div class="threshold-range">
-        <span>25°C</span>
-        <span>35°C</span>
-      </div>
-    </section>
-  </main>
+async function load(){
+const r=await fetch('/api/status');
+const d=await r.json();
 
-  <footer>
-    <span>SCADA Monitoring v1.0</span>
-    <span>© 2026 Robby Auliya Alhikmah</span>
-  </footer>
+suhu.innerText=d.suhu+'°C';
+hum.innerText=d.kelembapan+'%';
+volt.innerText=d.voltage.toFixed(1)+'V';
+power.innerText=d.power.toFixed(0)+'W';
+wifi.innerText=d.wifi.toFixed(0)+' dBm';
 
-  <script>
-    const suhuValue = document.getElementById('suhuValue');
-    const suhuStatus = document.getElementById('suhuStatus');
-    const tempPanel = document.getElementById('tempPanel');
-    const humValue = document.getElementById('humValue');
-    const humBar = document.getElementById('humBar');
-    const presValue = document.getElementById('presValue');
-    const presBar = document.getElementById('presBar');
-    const relayLed = document.getElementById('relayLed');
-    const relayStatus = document.getElementById('relayStatus');
-    const relayFoot = document.getElementById('relayFoot');
-    const thresholdSlider = document.getElementById('thresholdSlider');
-    const thresholdLabel = document.getElementById('thresholdLabel');
-    const clock = document.getElementById('clock');
-    const chartSuhu = document.getElementById('chartSuhu');
-    const chartHum = document.getElementById('chartHum');
-    const ctxSuhu = chartSuhu.getContext('2d');
-    const ctxHum = chartHum.getContext('2d');
+threshold.value=d.threshold;
+thresholdText.innerText='Threshold '+d.threshold+'°C';
 
-    let lastThreshold = null;
+alert.innerHTML=d.suhu>d.threshold
+?'<div class="danger">🔥 Suhu Tinggi</div>'
+:'<div class="ok">✅ Normal</div>';
 
-    function updateClock() {
-      const now = new Date();
-      clock.textContent = now.toLocaleTimeString('id-ID');
-    }
+chart.data.labels=d.history.map(x=>x.time);
+chart.data.datasets[0].data=d.history.map(x=>x.suhu);
+chart.data.datasets[1].data=d.history.map(x=>x.kelembapan);
+chart.update();
 
-    function resizeCanvases() {
-      [chartSuhu, chartHum].forEach(c => {
-        const dpr = window.devicePixelRatio || 1;
-        const rect = c.getBoundingClientRect();
-        c.width = rect.width * dpr;
-        c.height = 180 * dpr;
-        c.getContext('2d').scale(dpr, dpr);
-      });
-    }
+logs.innerHTML=d.history.slice(-10).reverse()
+.map(x=>`<tr><td>${x.time}</td><td>${x.suhu}</td><td>${x.kelembapan}</td></tr>`).join('');
+}
 
-    async function fetchStatus() {
-      try {
-        const res = await fetch('/api/status');
-        const data = await res.json();
+threshold.onchange=async()=>{
+await fetch('/api/threshold',{
+method:'POST',
+headers:{'Content-Type':'application/json'},
+body:JSON.stringify({threshold:parseFloat(threshold.value)})
+});
+};
 
-        suhuValue.textContent = data.suhu.toFixed(1);
-        humValue.textContent = data.kelembapan.toFixed(1) + ' %';
-        presValue.textContent = data.tekanan.toFixed(1) + ' hPa';
-
-        humBar.style.width = ((data.kelembapan - 30) / 60 * 100) + '%';
-        presBar.style.width = ((data.tekanan - 1000) / 25 * 100) + '%';
-
-        if (data.suhu >= data.threshold) {
-          suhuStatus.textContent = 'PERINGATAN — SUHU TINGGI';
-          suhuStatus.className = 'temp-status status-alert';
-          tempPanel.className = 'panel main-temp alert';
-        } else if (data.suhu >= data.threshold - 1.5) {
-          suhuStatus.textContent = 'MENDEKATI AMBANG BATAS';
-          suhuStatus.className = 'temp-status status-warn';
-          tempPanel.className = 'panel main-temp warn';
-        } else {
-          suhuStatus.textContent = 'NORMAL';
-          suhuStatus.className = 'temp-status status-ok';
-          tempPanel.className = 'panel main-temp';
-        }
-
-        relayStatus.textContent = data.relay ? 'AKTIF' : 'STANDBY';
-        relayLed.className = 'led ' + (data.relay ? 'led-on' : 'led-off');
-        relayFoot.textContent = data.relay ? 'Pendingin menurunkan suhu' : 'Suhu dalam batas normal';
-
-        if (lastThreshold === null) {
-          thresholdSlider.value = data.threshold;
-          thresholdLabel.textContent = data.threshold.toFixed(1) + '°C';
-          lastThreshold = data.threshold;
-        }
-
-        drawLineChart(ctxSuhu, chartSuhu, data.history.map(h => h.suhu), 20, 40, '#ff5c5c', data.threshold);
-        drawLineChart(ctxHum, chartHum, data.history.map(h => h.kelembapan), 30, 90, '#4dabff', null);
-      } catch (e) {
-        suhuValue.textContent = 'ERR';
-      }
-    }
-
-    function drawLineChart(ctx, canvas, values, min, max, color, thresholdVal) {
-      const rect = canvas.getBoundingClientRect();
-      const w = rect.width, h = 180, padding = 10;
-      ctx.clearRect(0, 0, w, h);
-      if (values.length < 2) return;
-
-      // grid
-      ctx.strokeStyle = 'rgba(255,255,255,0.05)';
-      ctx.lineWidth = 1;
-      for (let i = 0; i <= 4; i++) {
-        const y = padding + (i / 4) * (h - padding * 2);
-        ctx.beginPath();
-        ctx.moveTo(0, y);
-        ctx.lineTo(w, y);
-        ctx.stroke();
-      }
-
-      // threshold line
-      if (thresholdVal !== null) {
-        const ty = padding + (1 - (thresholdVal - min) / (max - min)) * (h - padding * 2);
-        ctx.strokeStyle = 'rgba(255,92,92,0.4)';
-        ctx.setLineDash([5, 5]);
-        ctx.beginPath();
-        ctx.moveTo(0, ty);
-        ctx.lineTo(w, ty);
-        ctx.stroke();
-        ctx.setLineDash([]);
-      }
-
-      // area
-      const grad = ctx.createLinearGradient(0, padding, 0, h - padding);
-      grad.addColorStop(0, color + '33');
-      grad.addColorStop(1, color + '00');
-      ctx.beginPath();
-      values.forEach((v, i) => {
-        const x = (i / (values.length - 1)) * w;
-        const y = padding + (1 - (v - min) / (max - min)) * (h - padding * 2);
-        if (i === 0) ctx.moveTo(x, y);
-        else ctx.lineTo(x, y);
-      });
-      ctx.lineTo(w, h - padding);
-      ctx.lineTo(0, h - padding);
-      ctx.closePath();
-      ctx.fillStyle = grad;
-      ctx.fill();
-
-      // line
-      ctx.beginPath();
-      values.forEach((v, i) => {
-        const x = (i / (values.length - 1)) * w;
-        const y = padding + (1 - (v - min) / (max - min)) * (h - padding * 2);
-        if (i === 0) ctx.moveTo(x, y);
-        else ctx.lineTo(x, y);
-      });
-      ctx.strokeStyle = color;
-      ctx.lineWidth = 2;
-      ctx.lineJoin = 'round';
-      ctx.stroke();
-
-      // last dot
-      const lastV = values[values.length - 1];
-      const ly = padding + (1 - (lastV - min) / (max - min)) * (h - padding * 2);
-      ctx.beginPath();
-      ctx.arc(w - 3, ly, 3.5, 0, Math.PI * 2);
-      ctx.fillStyle = color;
-      ctx.fill();
-    }
-
-    thresholdSlider.addEventListener('input', () => {
-      thresholdLabel.textContent = parseFloat(thresholdSlider.value).toFixed(1) + '°C';
-    });
-
-    thresholdSlider.addEventListener('change', async () => {
-      const val = parseFloat(thresholdSlider.value);
-      await fetch('/api/threshold', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ threshold: val })
-      });
-      lastThreshold = val;
-    });
-
-    window.addEventListener('resize', resizeCanvases);
-    resizeCanvases();
-    updateClock();
-    setInterval(updateClock, 1000);
-    fetchStatus();
-    setInterval(fetchStatus, 2000);
-  </script>
+load();
+setInterval(load,2000);
+</script>
 </body>
 </html>

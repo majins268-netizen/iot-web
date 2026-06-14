@@ -1,66 +1,40 @@
-const express = require('express');
-const path = require('path');
-const app = express();
-const PORT = 3001;
 
-let state = {
-  suhu: 28.0,
-  kelembapan: 60.0,
-  tekanan: 1013.0,
-  relay: false,
-  threshold: 30.0,
-  history: []
+const express=require('express');
+const path=require('path');
+const app=express();
+const PORT=3001;
+
+let state={
+ suhu:28, kelembapan:60, relay:false, threshold:30,
+ voltage:220, power:350, battery:95, wifi:-60, history:[]
 };
 
-setInterval(() => {
-  let drift = state.relay ? -0.3 : 0.2;
-  let noise = (Math.random() - 0.5) * 0.6;
-  state.suhu = state.suhu + drift + noise;
-  if (state.suhu < 20) state.suhu = 20;
-  if (state.suhu > 40) state.suhu = 40;
-  state.suhu = Math.round(state.suhu * 10) / 10;
+setInterval(()=>{
+ state.suhu=Math.max(20,Math.min(40, +(state.suhu+(Math.random()-0.4)).toFixed(1)));
+ state.kelembapan=Math.max(30,Math.min(90, +(state.kelembapan+(Math.random()*2-1)).toFixed(1)));
+ state.voltage=220+(Math.random()*4-2);
+ state.power=300+Math.random()*100;
+ state.wifi=-50-Math.random()*20;
 
-  let humDrift = (Math.random() - 0.5) * 2;
-  state.kelembapan += humDrift;
-  if (state.kelembapan < 30) state.kelembapan = 30;
-  if (state.kelembapan > 90) state.kelembapan = 90;
-  state.kelembapan = Math.round(state.kelembapan * 10) / 10;
+ state.relay=state.suhu>=state.threshold;
 
-  let presDrift = (Math.random() - 0.5) * 0.5;
-  state.tekanan += presDrift;
-  if (state.tekanan < 1000) state.tekanan = 1000;
-  if (state.tekanan > 1025) state.tekanan = 1025;
-  state.tekanan = Math.round(state.tekanan * 10) / 10;
+ state.history.push({
+   time:new Date().toLocaleTimeString(),
+   suhu:state.suhu,
+   kelembapan:state.kelembapan
+ });
 
-  if (state.suhu >= state.threshold) {
-    state.relay = true;
-  } else if (state.suhu <= state.threshold - 2) {
-    state.relay = false;
-  }
+ if(state.history.length>50) state.history.shift();
+},2000);
 
-  state.history.push({ t: Date.now(), suhu: state.suhu, kelembapan: state.kelembapan, tekanan: state.tekanan, relay: state.relay });
-  if (state.history.length > 40) state.history.shift();
-}, 2000);
-
-app.use(express.static(path.join(__dirname)));
+app.use(express.static(__dirname));
 app.use(express.json());
 
-app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'index.html'));
+app.get('/api/status',(req,res)=>res.json(state));
+
+app.post('/api/threshold',(req,res)=>{
+ state.threshold=req.body.threshold || state.threshold;
+ res.json(state);
 });
 
-app.get('/api/status', (req, res) => {
-  res.json(state);
-});
-
-app.post('/api/threshold', (req, res) => {
-  const { threshold } = req.body;
-  if (typeof threshold === 'number' && threshold > 20 && threshold < 40) {
-    state.threshold = threshold;
-  }
-  res.json(state);
-});
-
-app.listen(PORT, () => {
-  console.log(`SCADA Suhu jalan di http://localhost:${PORT}`);
-});
+app.listen(PORT,()=>console.log("Dashboard running on :"+PORT));
