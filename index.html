@@ -3,63 +3,122 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>IoT Suhu Otomatis</title>
-  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <title>SmartTemp — IoT Climate Monitoring</title>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
+  <div class="bg-glow"></div>
+
   <header>
-    <span class="title">IoT Suhu Otomatis</span>
-    <span class="subtitle">Robby Auliya Alhikmah</span>
+    <div class="brand">
+      <svg class="logo" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="50" cy="50" r="18" fill="#ffb84d"/>
+        <g stroke="#ffb84d" stroke-width="4" stroke-linecap="round">
+          <line x1="50" y1="8" x2="50" y2="20"/>
+          <line x1="50" y1="80" x2="50" y2="92"/>
+          <line x1="8" y1="50" x2="20" y2="50"/>
+          <line x1="80" y1="50" x2="92" y2="50"/>
+          <line x1="20" y1="20" x2="28" y2="28"/>
+          <line x1="72" y1="72" x2="80" y2="80"/>
+          <line x1="80" y1="20" x2="72" y2="28"/>
+          <line x1="20" y1="80" x2="28" y2="72"/>
+        </g>
+      </svg>
+      <div>
+        <div class="brand-name">SmartTemp</div>
+        <div class="brand-sub">Climate Monitoring System</div>
+      </div>
+    </div>
+    <div class="status-pill" id="connStatus">
+      <span class="dot"></span>
+      <span>Live</span>
+    </div>
   </header>
 
   <main>
-    <section class="card main-card">
-      <div class="suhu-display">
-        <span class="suhu-value" id="suhuValue">--</span>
-        <span class="suhu-unit">°C</span>
-      </div>
-      <div class="status-row">
-        <div class="status-item">
-          <span class="label">Status Kipas</span>
-          <span class="value" id="relayStatus">--</span>
+    <section class="grid-top">
+      <div class="card metric-card">
+        <div class="metric-header">
+          <span class="metric-label">Suhu Ruangan</span>
+          <svg class="metric-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path d="M12 3a2 2 0 0 0-2 2v9.17a4 4 0 1 0 4 0V5a2 2 0 0 0-2-2z"/>
+          </svg>
         </div>
-        <div class="status-item">
-          <span class="label">Threshold</span>
-          <span class="value" id="thresholdValue">--</span>
+        <div class="metric-value-row">
+          <span class="metric-value" id="suhuValue">--</span>
+          <span class="metric-unit">°C</span>
         </div>
+        <div class="metric-foot" id="suhuStatus">Memuat data...</div>
+      </div>
+
+      <div class="card metric-card">
+        <div class="metric-header">
+          <span class="metric-label">Kelembapan</span>
+          <svg class="metric-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path d="M12 2.5c3 4 6 7.5 6 11a6 6 0 0 1-12 0c0-3.5 3-7 6-11z"/>
+          </svg>
+        </div>
+        <div class="metric-value-row">
+          <span class="metric-value" id="humValue">--</span>
+          <span class="metric-unit">%</span>
+        </div>
+        <div class="metric-foot">Sensor kelembapan udara</div>
+      </div>
+
+      <div class="card metric-card">
+        <div class="metric-header">
+          <span class="metric-label">Sistem Pendingin</span>
+          <svg class="metric-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path d="M12 2v20M2 12h20M5 5l14 14M19 5L5 19"/>
+          </svg>
+        </div>
+        <div class="metric-value-row">
+          <span class="metric-value relay-value" id="relayStatus">--</span>
+        </div>
+        <div class="metric-foot" id="relayFoot">Status kipas / pendingin</div>
       </div>
     </section>
 
-    <section class="card">
-      <span class="label">Atur Threshold (°C)</span>
-      <div class="threshold-control">
-        <input type="range" id="thresholdSlider" min="25" max="35" step="0.5" value="30">
-        <span id="thresholdLabel">30.0</span>
+    <section class="card chart-card">
+      <div class="card-title-row">
+        <span class="card-title">Grafik Suhu Realtime</span>
+        <span class="card-subtitle">2 detik / data point</span>
       </div>
+      <canvas id="chart" height="220"></canvas>
     </section>
 
-    <section class="card">
-      <span class="label">Riwayat Suhu</span>
-      <canvas id="chart" width="400" height="150"></canvas>
-    </section>
-
-    <section class="card">
-      <span class="label">Cara Kerja</span>
-      <p class="desc">
-        Sensor suhu disimulasikan secara otomatis. Jika suhu mencapai atau melebihi threshold,
-        sistem akan menyalakan kipas/relay secara otomatis untuk menurunkan suhu.
-        Kipas mati otomatis ketika suhu turun 2°C di bawah threshold (hysteresis).
+    <section class="card control-card">
+      <div class="card-title-row">
+        <span class="card-title">Kontrol Otomatis</span>
+      </div>
+      <p class="control-desc">
+        Sistem akan menyalakan pendingin secara otomatis ketika suhu mencapai atau melebihi ambang batas
+        yang ditentukan, dan mati otomatis setelah suhu turun 2°C di bawahnya.
       </p>
+      <div class="threshold-row">
+        <span class="threshold-label">Ambang Batas Suhu</span>
+        <span class="threshold-value" id="thresholdLabel">30.0°C</span>
+      </div>
+      <input type="range" id="thresholdSlider" min="25" max="35" step="0.5" value="30">
+      <div class="threshold-range">
+        <span>25°C</span>
+        <span>35°C</span>
+      </div>
     </section>
   </main>
 
-  <footer>© 2026 Robby Auliya Alhikmah</footer>
+  <footer>
+    <span>SmartTemp Climate System</span>
+    <span>© 2026 Robby Auliya Alhikmah</span>
+  </footer>
 
   <script>
     const suhuValue = document.getElementById('suhuValue');
+    const humValue = document.getElementById('humValue');
     const relayStatus = document.getElementById('relayStatus');
-    const thresholdValue = document.getElementById('thresholdValue');
+    const relayFoot = document.getElementById('relayFoot');
+    const suhuStatus = document.getElementById('suhuStatus');
     const thresholdSlider = document.getElementById('thresholdSlider');
     const thresholdLabel = document.getElementById('thresholdLabel');
     const canvas = document.getElementById('chart');
@@ -67,18 +126,36 @@
 
     let lastThreshold = null;
 
+    function resizeCanvas() {
+      const dpr = window.devicePixelRatio || 1;
+      const rect = canvas.getBoundingClientRect();
+      canvas.width = rect.width * dpr;
+      canvas.height = 220 * dpr;
+      ctx.scale(dpr, dpr);
+    }
+
     async function fetchStatus() {
       try {
         const res = await fetch('/api/status');
         const data = await res.json();
+
         suhuValue.textContent = data.suhu.toFixed(1);
-        relayStatus.textContent = data.relay ? 'ON' : 'OFF';
-        relayStatus.className = 'value ' + (data.relay ? 'on' : 'off');
-        thresholdValue.textContent = data.threshold.toFixed(1) + ' °C';
+        humValue.textContent = data.kelembapan.toFixed(1);
+        relayStatus.textContent = data.relay ? 'AKTIF' : 'STANDBY';
+        relayStatus.className = 'metric-value relay-value ' + (data.relay ? 'relay-on' : 'relay-off');
+        relayFoot.textContent = data.relay ? 'Pendingin sedang menurunkan suhu' : 'Suhu dalam batas normal';
+
+        if (data.suhu >= data.threshold) {
+          suhuStatus.textContent = 'Suhu melebihi ambang batas';
+          suhuStatus.className = 'metric-foot foot-warn';
+        } else {
+          suhuStatus.textContent = 'Suhu dalam rentang normal';
+          suhuStatus.className = 'metric-foot foot-ok';
+        }
 
         if (lastThreshold === null) {
           thresholdSlider.value = data.threshold;
-          thresholdLabel.textContent = data.threshold.toFixed(1);
+          thresholdLabel.textContent = data.threshold.toFixed(1) + '°C';
           lastThreshold = data.threshold;
         }
 
@@ -89,37 +166,79 @@
     }
 
     function drawChart(history, threshold) {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      const rect = canvas.getBoundingClientRect();
+      const w = rect.width, h = 220;
+      ctx.clearRect(0, 0, w, h);
       if (history.length < 2) return;
 
       const min = 20, max = 40;
-      const w = canvas.width, h = canvas.height;
+      const padding = 10;
 
-      // garis threshold
-      const ty = h - ((threshold - min) / (max - min)) * h;
-      ctx.strokeStyle = '#555';
-      ctx.setLineDash([4, 4]);
+      // grid lines
+      ctx.strokeStyle = 'rgba(255,255,255,0.06)';
+      ctx.lineWidth = 1;
+      for (let i = 0; i <= 4; i++) {
+        const y = padding + (i / 4) * (h - padding * 2);
+        ctx.beginPath();
+        ctx.moveTo(0, y);
+        ctx.lineTo(w, y);
+        ctx.stroke();
+      }
+
+      // threshold line
+      const ty = padding + (1 - (threshold - min) / (max - min)) * (h - padding * 2);
+      ctx.strokeStyle = 'rgba(255,184,77,0.5)';
+      ctx.setLineDash([5, 5]);
+      ctx.lineWidth = 1.5;
       ctx.beginPath();
       ctx.moveTo(0, ty);
       ctx.lineTo(w, ty);
       ctx.stroke();
       ctx.setLineDash([]);
 
-      // garis suhu
-      ctx.strokeStyle = '#c8f55a';
-      ctx.lineWidth = 2;
+      // area fill
+      const gradient = ctx.createLinearGradient(0, padding, 0, h - padding);
+      gradient.addColorStop(0, 'rgba(255,184,77,0.25)');
+      gradient.addColorStop(1, 'rgba(255,184,77,0)');
+
       ctx.beginPath();
       history.forEach((point, i) => {
         const x = (i / (history.length - 1)) * w;
-        const y = h - ((point.suhu - min) / (max - min)) * h;
+        const y = padding + (1 - (point.suhu - min) / (max - min)) * (h - padding * 2);
         if (i === 0) ctx.moveTo(x, y);
         else ctx.lineTo(x, y);
       });
+      ctx.lineTo(w, h - padding);
+      ctx.lineTo(0, h - padding);
+      ctx.closePath();
+      ctx.fillStyle = gradient;
+      ctx.fill();
+
+      // line
+      ctx.beginPath();
+      history.forEach((point, i) => {
+        const x = (i / (history.length - 1)) * w;
+        const y = padding + (1 - (point.suhu - min) / (max - min)) * (h - padding * 2);
+        if (i === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+      });
+      ctx.strokeStyle = '#ffb84d';
+      ctx.lineWidth = 2.5;
+      ctx.lineJoin = 'round';
       ctx.stroke();
+
+      // last point dot
+      const last = history[history.length - 1];
+      const lx = w;
+      const ly = padding + (1 - (last.suhu - min) / (max - min)) * (h - padding * 2);
+      ctx.beginPath();
+      ctx.arc(lx - 2, ly, 4, 0, Math.PI * 2);
+      ctx.fillStyle = '#ffb84d';
+      ctx.fill();
     }
 
     thresholdSlider.addEventListener('input', () => {
-      thresholdLabel.textContent = parseFloat(thresholdSlider.value).toFixed(1);
+      thresholdLabel.textContent = parseFloat(thresholdSlider.value).toFixed(1) + '°C';
     });
 
     thresholdSlider.addEventListener('change', async () => {
@@ -132,6 +251,8 @@
       lastThreshold = val;
     });
 
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
     fetchStatus();
     setInterval(fetchStatus, 2000);
   </script>
