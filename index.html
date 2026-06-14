@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IoT Suhu Otomatis</title>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header>
+    <span class="title">IoT Suhu Otomatis</span>
+    <span class="subtitle">Robby Auliya Alhikmah</span>
+  </header>
+
+  <main>
+    <section class="card main-card">
+      <div class="suhu-display">
+        <span class="suhu-value" id="suhuValue">--</span>
+        <span class="suhu-unit">°C</span>
+      </div>
+      <div class="status-row">
+        <div class="status-item">
+          <span class="label">Status Kipas</span>
+          <span class="value" id="relayStatus">--</span>
+        </div>
+        <div class="status-item">
+          <span class="label">Threshold</span>
+          <span class="value" id="thresholdValue">--</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="card">
+      <span class="label">Atur Threshold (°C)</span>
+      <div class="threshold-control">
+        <input type="range" id="thresholdSlider" min="25" max="35" step="0.5" value="30">
+        <span id="thresholdLabel">30.0</span>
+      </div>
+    </section>
+
+    <section class="card">
+      <span class="label">Riwayat Suhu</span>
+      <canvas id="chart" width="400" height="150"></canvas>
+    </section>
+
+    <section class="card">
+      <span class="label">Cara Kerja</span>
+      <p class="desc">
+        Sensor suhu disimulasikan secara otomatis. Jika suhu mencapai atau melebihi threshold,
+        sistem akan menyalakan kipas/relay secara otomatis untuk menurunkan suhu.
+        Kipas mati otomatis ketika suhu turun 2°C di bawah threshold (hysteresis).
+      </p>
+    </section>
+  </main>
+
+  <footer>© 2026 Robby Auliya Alhikmah</footer>
+
+  <script>
+    const suhuValue = document.getElementById('suhuValue');
+    const relayStatus = document.getElementById('relayStatus');
+    const thresholdValue = document.getElementById('thresholdValue');
+    const thresholdSlider = document.getElementById('thresholdSlider');
+    const thresholdLabel = document.getElementById('thresholdLabel');
+    const canvas = document.getElementById('chart');
+    const ctx = canvas.getContext('2d');
+
+    let lastThreshold = null;
+
+    async function fetchStatus() {
+      try {
+        const res = await fetch('/api/status');
+        const data = await res.json();
+        suhuValue.textContent = data.suhu.toFixed(1);
+        relayStatus.textContent = data.relay ? 'ON' : 'OFF';
+        relayStatus.className = 'value ' + (data.relay ? 'on' : 'off');
+        thresholdValue.textContent = data.threshold.toFixed(1) + ' °C';
+
+        if (lastThreshold === null) {
+          thresholdSlider.value = data.threshold;
+          thresholdLabel.textContent = data.threshold.toFixed(1);
+          lastThreshold = data.threshold;
+        }
+
+        drawChart(data.history, data.threshold);
+      } catch (e) {
+        suhuValue.textContent = 'Err';
+      }
+    }
+
+    function drawChart(history, threshold) {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      if (history.length < 2) return;
+
+      const min = 20, max = 40;
+      const w = canvas.width, h = canvas.height;
+
+      // garis threshold
+      const ty = h - ((threshold - min) / (max - min)) * h;
+      ctx.strokeStyle = '#555';
+      ctx.setLineDash([4, 4]);
+      ctx.beginPath();
+      ctx.moveTo(0, ty);
+      ctx.lineTo(w, ty);
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      // garis suhu
+      ctx.strokeStyle = '#c8f55a';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      history.forEach((point, i) => {
+        const x = (i / (history.length - 1)) * w;
+        const y = h - ((point.suhu - min) / (max - min)) * h;
+        if (i === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+      });
+      ctx.stroke();
+    }
+
+    thresholdSlider.addEventListener('input', () => {
+      thresholdLabel.textContent = parseFloat(thresholdSlider.value).toFixed(1);
+    });
+
+    thresholdSlider.addEventListener('change', async () => {
+      const val = parseFloat(thresholdSlider.value);
+      await fetch('/api/threshold', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ threshold: val })
+      });
+      lastThreshold = val;
+    });
+
+    fetchStatus();
+    setInterval(fetchStatus, 2000);
+  </script>
+</body>
+</html>

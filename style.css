@@ -1,0 +1,131 @@
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg: #080808;
+  --text: #d8d8d8;
+  --muted: #555;
+  --line: #1e1e1e;
+  --accent: #c8f55a;
+  --on: #c8f55a;
+  --off: #555;
+  --font: 'Space Mono', monospace;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font);
+  font-size: 13px;
+  line-height: 1.7;
+}
+
+header {
+  display: flex;
+  flex-direction: column;
+  padding: 2rem 3rem 1.5rem;
+  border-bottom: 1px solid var(--line);
+}
+.title { font-size: 1.1rem; font-weight: 700; color: #fff; letter-spacing: -0.01em; }
+.subtitle { font-size: 11px; color: var(--muted); margin-top: 0.3rem; letter-spacing: 0.05em; }
+
+main {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  padding: 2rem 3rem 3rem;
+  max-width: 600px;
+}
+
+.card {
+  border: 1px solid var(--line);
+  padding: 1.5rem;
+}
+
+.main-card { text-align: center; }
+
+.suhu-display {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 0.3rem;
+  margin-bottom: 1.5rem;
+}
+.suhu-value {
+  font-size: 4rem;
+  font-weight: 700;
+  color: #fff;
+  line-height: 1;
+}
+.suhu-unit {
+  font-size: 1.2rem;
+  color: var(--muted);
+}
+
+.status-row {
+  display: flex;
+  justify-content: space-around;
+  border-top: 1px solid var(--line);
+  padding-top: 1.5rem;
+}
+.status-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.label {
+  font-size: 10px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--muted);
+  display: block;
+  margin-bottom: 0.8rem;
+}
+
+.value {
+  font-size: 1.1rem;
+  font-weight: 700;
+}
+.value.on { color: var(--on); }
+.value.off { color: var(--off); }
+
+.threshold-control {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+.threshold-control input[type="range"] {
+  flex: 1;
+  accent-color: var(--accent);
+}
+.threshold-control span {
+  font-weight: 700;
+  color: #fff;
+  min-width: 3rem;
+  text-align: right;
+}
+
+canvas {
+  width: 100%;
+  height: 150px;
+  display: block;
+}
+
+.desc {
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.8;
+}
+
+footer {
+  padding: 1.5rem 3rem;
+  border-top: 1px solid var(--line);
+  font-size: 10px;
+  color: var(--muted);
+  letter-spacing: 0.05em;
+}
+
+@media (max-width: 640px) {
+  header { padding: 1.5rem; }
+  main { padding: 1.5rem; }
+}
